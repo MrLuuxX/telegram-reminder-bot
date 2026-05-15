@@ -1,8 +1,8 @@
+import os
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-from datetime import datetime
+from telegram.ext import Application, CommandHandler, ContextTypes
 
-TOKEN = "8667830292:AAFULxi6gqcjoHF3p5dTLZLGmY-LjGYI7Zk"
+TOKEN = os.getenv("8667830292:AAFULxi6gqcjoHF3p5dTLZLGmY-LjGYI7Zk")
 
 aniversarios = {}
 
@@ -39,7 +39,7 @@ async def listar(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text(mensagem)
 
-app = ApplicationBuilder().token(TOKEN).build()
+app = Application.builder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("aniversario", aniversario))
