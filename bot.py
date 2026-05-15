@@ -1,49 +1,32 @@
 import os
-from telegram import Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from threading import Thread
+from flask import Flask
+from telegram.ext import Application, CommandHandler
 
-TOKEN = os.getenv("8667830292:AAFULxi6gqcjoHF3p5dTLZLGmY-LjGYI7Zk")
+TOKEN = os.getenv("BOT_TOKEN")
 
-aniversarios = {}
+# ===== FLASK =====
+app_web = Flask(__name__)
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Olá! Sou seu assistente de lembretes 😄"
-    )
+@app_web.route("/")
+def home():
+    return "Bot online!"
 
-async def aniversario(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        nome = context.args[0]
-        data = context.args[1]
+def run_web():
+    port = int(os.environ.get("PORT", 10000))
+    app_web.run(host="0.0.0.0", port=port)
 
-        aniversarios[nome] = data
+# ===== TELEGRAM =====
+async def start(update, context):
+    await update.message.reply_text("Bot funcionando 😄")
 
-        await update.message.reply_text(
-            f"Aniversário de {nome} salvo para {data} 🎉"
-        )
+telegram_app = Application.builder().token(TOKEN).build()
 
-    except:
-        await update.message.reply_text(
-            "Use:\n/aniversario Nome DD/MM"
-        )
+telegram_app.add_handler(CommandHandler("start", start))
 
-async def listar(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not aniversarios:
-        await update.message.reply_text("Nenhum aniversário salvo.")
-        return
+# ===== START =====
+if __name__ == "__main__":
+    Thread(target=run_web).start()
 
-    mensagem = "📅 Aniversários:\n\n"
-
-    for nome, data in aniversarios.items():
-        mensagem += f"{nome} - {data}\n"
-
-    await update.message.reply_text(mensagem)
-
-app = Application.builder().token(TOKEN).build()
-
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("aniversario", aniversario))
-app.add_handler(CommandHandler("listar", listar))
-
-print("Bot rodando...")
-app.run_polling()
+    print("Bot iniciado...")
+    telegram_app.run_polling()
